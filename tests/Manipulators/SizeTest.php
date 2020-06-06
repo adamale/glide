@@ -120,9 +120,11 @@ class SizeTest extends \PHPUnit_Framework_TestCase
             $mock->shouldReceive('height')->andReturn(200);
         });
 
-        $this->assertSame([400, 200], $this->manipulator->resolveMissingDimensions($image, null, null));
-        $this->assertSame([100, 50], $this->manipulator->resolveMissingDimensions($image, 100, null));
-        $this->assertSame([200, 100], $this->manipulator->resolveMissingDimensions($image, null, 100));
+        $this->assertSame([400, 200], $this->manipulator->resolveMissingDimensions($image, null, null, false));
+        $this->assertSame([100, 50], $this->manipulator->resolveMissingDimensions($image, 100, null, false));
+        $this->assertSame([200, 100], $this->manipulator->resolveMissingDimensions($image, null, 100, false));
+        $this->assertSame([100, 200], $this->manipulator->resolveMissingDimensions($image, 100, null, true));
+        $this->assertSame([400, 100], $this->manipulator->resolveMissingDimensions($image, null, 100, true));
     }
 
     public function testLimitImageSize()

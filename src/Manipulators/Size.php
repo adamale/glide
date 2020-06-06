@@ -9,6 +9,7 @@ use Intervention\Image\Image;
  * @property string $fit
  * @property string $h
  * @property string $w
+ * @property string od
  */
 class Size extends BaseManipulator
 {
@@ -56,8 +57,9 @@ class Size extends BaseManipulator
         $height = $this->getHeight();
         $fit = $this->getFit();
         $dpr = $this->getDpr();
+        $keepOriginalDimensionWhenMissing = $this->shouldKeepOriginalDimensionWhenMissing();
 
-        list($width, $height) = $this->resolveMissingDimensions($image, $width, $height);
+        list($width, $height) = $this->resolveMissingDimensions($image, $width, $height, $keepOriginalDimensionWhenMissing);
         list($width, $height) = $this->applyDpr($width, $height, $dpr);
         list($width, $height) = $this->limitImageSize($width, $height);
 
@@ -137,13 +139,23 @@ class Size extends BaseManipulator
     }
 
     /**
+     * Resolve original dimension keeping.
+     * @return bool
+     */
+    public function shouldKeepOriginalDimensionWhenMissing(): bool
+    {
+        return (bool) $this->od;
+    }
+
+    /**
      * Resolve missing image dimensions.
      * @param  Image        $image  The source image.
      * @param  integer|null $width  The image width.
      * @param  integer|null $height The image height.
+     * @param  bool $keepOriginalDimensionWhenMissing Should the original dimension be kept when missing.
      * @return integer[]    The resolved width and height.
      */
-    public function resolveMissingDimensions(Image $image, $width, $height)
+    public function resolveMissingDimensions(Image $image, $width, $height, $keepOriginalDimensionWhenMissing)
     {
         if (is_null($width) and is_null($height)) {
             $width = $image->width();
@@ -151,11 +163,19 @@ class Size extends BaseManipulator
         }
 
         if (is_null($width)) {
-            $width = $height * ($image->width() / $image->height());
+            if ($keepOriginalDimensionWhenMissing) {
+                $width = $image->width();
+            } else {
+                $width = $height * ($image->width() / $image->height());
+            }
         }
 
         if (is_null($height)) {
-            $height = $width / ($image->width() / $image->height());
+            if ($keepOriginalDimensionWhenMissing) {
+                $height = $image->height();
+            } else {
+                $height = $width / ($image->width() / $image->height());
+            }
         }
 
         return [
